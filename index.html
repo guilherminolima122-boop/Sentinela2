@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071b33">
+  <title>Sentinela | Glitch Lore Studio's</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark" aria-hidden="true"><span>◇</span></div>
+    <div><div class="brand">SENTINELA</div><div class="tagline">Glitch Lore Studio's • Proteção em rede</div></div>
+    <button id="refreshBtn" class="icon-btn" aria-label="Atualizar dados">↻</button>
+  </header>
+  <main>
+    <section class="welcome"><div><p class="eyebrow">PAINEL DE SEGURANÇA • GLITCH LORE STUDIO'S</p><h1>Esteja preparado.<br><span>Cuide de quem importa.</span></h1></div><div class="shield" aria-label="Diamante Sentinela">◇</div></section>
+    <section class="location-row"><div class="location-icon">⌖</div><div class="location-copy"><small>REGIÃO SELECIONADA</small><strong id="locationLabel">São Paulo, Brasil</strong></div><button id="changeLocation" class="text-btn">Alterar</button></section>
+    <div class="notice"><span class="notice-dot"></span><div><strong>Monitoramento experimental</strong><p>A previsão abaixo usa dados meteorológicos online. Não substitui alertas oficiais e ainda não envia notificações automáticas em segundo plano.</p></div></div>
+    <nav class="tabs" aria-label="Navegação principal">
+      <button class="tab active" data-view="alerts">◈ <span>Alertas</span></button>
+      <button class="tab" data-view="map">⌖ <span>Mapa</span></button>
+      <button class="tab" data-view="family">♧ <span>Família</span></button>
+      <button class="tab" data-view="sources">☷ <span>Fontes</span></button>
+      <button class="tab" data-view="create">✎ <span>Cartão</span></button>
+    </nav>
+
+    <section id="view-alerts" class="view">
+      <div class="section-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h2>Visão geral</h2></div><span class="pill neutral">DEMO</span></div>
+      <div class="stats-grid">
+        <article class="stat-card"><div class="stat-icon rain">☂</div><div class="stat-label">Condição meteorológica</div><strong id="weatherHeadline">Consultando…</strong><small id="weatherSummary">Dados online via Open-Meteo</small></article>
+        <article class="stat-card"><div class="stat-icon quake">⌁</div><div class="stat-label">Terremotos</div><strong id="quakeCount">Carregando…</strong><small>Feed global do USGS</small></article>
+      </div>
+      <div class="weather-panel" id="weatherPanel"><div class="weather-panel-top"><div><p class="eyebrow">PREVISÃO AUTOMÁTICA</p><h3 id="weatherPlace">São Paulo</h3></div><span class="weather-icon" id="weatherIcon">◇</span></div><div class="weather-metrics"><div><small>Chuva (próxima hora)</small><strong id="rainMetric">—</strong></div><div><small>Probabilidade</small><strong id="rainChance">—</strong></div><div><small>Vento</small><strong id="windMetric">—</strong></div></div><p id="weatherStatus" class="weather-status">Buscando previsão meteorológica…</p><button id="shareWeather" class="secondary-btn" type="button">Preparar aviso no WhatsApp</button><small class="micro-note">Estimativa de previsão, não alerta oficial. Verifique a fonte e as condições locais.</small></div>
+      <div class="section-heading compact"><h2>Avisos oficiais</h2><span class="pill neutral">STATUS DAS FONTES</span></div>
+      <section class="official-status" aria-live="polite" aria-labelledby="officialStatusTitle">
+        <div class="official-status-head"><span class="official-status-icon">ⓘ</span><div><h3 id="officialStatusTitle">Avisos oficiais não conectados automaticamente</h3><p id="officialPanelTime">Painel aberto nesta sessão: aguardando horário…</p></div></div>
+        <p class="official-status-message"><strong>Nenhum aviso oficial foi recebido pelo Sentinela nesta versão.</strong> Isso não significa que não existam alertas ativos. O app ainda não consulta automaticamente os feeds da Defesa Civil ou do INMET; por isso, o horário de publicação de um aviso oficial está indisponível aqui.</p>
+        <div class="official-source-links">
+          <a href="https://portal.inmet.gov.br/" target="_blank" rel="noopener">🌦️ INMET — avisos meteorológicos ↗</a>
+          <a href="https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil" target="_blank" rel="noopener">🇧🇷 Defesa Civil Nacional ↗</a>
+          <a href="https://www.cgesp.org/" target="_blank" rel="noopener">🏙️ CGE São Paulo ↗</a>
+        </div>
+        <small class="official-status-foot">Horário exibido abaixo é apenas o momento em que esta tela foi aberta — não é o horário de consulta das fontes oficiais.</small>
+      </section>
+      <div class="section-heading compact"><h2>Alertas e comunicados</h2><button id="showAll" class="text-btn">Sobre os avisos</button></div>
+      <div id="alertsList" class="alerts-list">
+        <article class="alert-card demo-card"><div class="alert-top"><span class="status-chip demo">SIMULAÇÃO</span><span class="time">Exemplo</span></div><div class="alert-title"><span class="event-emoji">🌧️</span><div><h3>Chuva intensa</h3><p>Cartão ilustrativo para demonstrar a interface.</p></div></div><div class="alert-footer"><span>Não é um aviso meteorológico</span><span class="arrow">↗</span></div></article>
+        <article class="alert-card demo-card"><div class="alert-top"><span class="status-chip demo">SIMULAÇÃO</span><span class="time">Exemplo</span></div><div class="alert-title"><span class="event-emoji">⛰️</span><div><h3>Risco de deslizamento</h3><p>Consulte a Defesa Civil da sua região para informações oficiais.</p></div></div><div class="alert-footer"><span>Não é um aviso oficial</span><span class="arrow">↗</span></div></article>
+      </div>
+      <div class="source-note"><span>ⓘ</span><p>O Sentinela ainda não envia alertas de emergência. Em uma situação real, siga a Defesa Civil e os serviços de emergência locais.</p></div>
+    </section>
+
+    <section id="view-map" class="view hidden">
+      <div class="section-heading"><div><p class="eyebrow">VISUALIZAÇÃO</p><h2>Mapa de eventos</h2></div><span class="pill neutral">MAPA</span></div>
+      <p class="muted">O mapa mostra terremotos recentes publicados pelo USGS quando a conexão está disponível. Isso não é uma previsão de terremotos nem um alerta de risco local.</p>
+      <div id="map"></div><div class="map-legend"><span><i class="legend-dot quake-dot"></i> Terremoto recente (USGS)</span><span><i class="legend-dot demo-dot"></i> Exemplos simulados não aparecem no mapa</span></div><div id="mapStatus" class="inline-status">Preparando mapa…</div>
+    </section>
+
+    <section id="view-family" class="view hidden">
+      <div class="section-heading"><div><p class="eyebrow">PLANO FAMILIAR</p><h2>Minha família</h2></div><span class="pill neutral">LOCAL</span></div>
+      <div class="family-callout"><div class="family-symbol">♧</div><div><strong>Planejem antes da emergência</strong><p>Combine um ponto de encontro, um contato de confiança e como avisar que todos estão bem.</p></div></div>
+      <form id="familyForm" class="family-form"><label for="memberName">Adicionar integrante (nome ou apelido)</label><div class="form-row"><input id="memberName" maxlength="35" placeholder="Ex.: Mãe" required><button type="submit" class="primary-btn">Adicionar</button></div></form>
+      <div id="familyList" class="family-list"></div>
+      <div class="privacy-note">🔒 Nesta versão, a lista fica somente neste navegador/celular. Ela não é enviada para outros familiares.</div>
+      <div class="plan-card"><h3>Checklist de emergência</h3><label class="check-row"><input type="checkbox"> Definir ponto de encontro</label><label class="check-row"><input type="checkbox"> Anotar contato de confiança</label><label class="check-row"><input type="checkbox"> Separar água, lanterna e itens necessários</label><label class="check-row"><input type="checkbox"> Conferir documentos e carregador portátil</label></div>
+    </section>
+
+    <section id="view-sources" class="view hidden">
+      <div class="section-heading"><div><p class="eyebrow">TRANSPARÊNCIA</p><h2>Fontes confiáveis</h2></div><span class="pill neutral">LINKS</span></div>
+      <p class="muted">Abrir um link leva você ao serviço de origem. Isso não significa que o Sentinela já esteja recebendo alertas dele automaticamente.</p>
+      <div class="source-list">
+        <a class="source-item" href="https://www.gov.br/mdr/pt-br/assuntos/protecao-e-defesa-civil" target="_blank" rel="noopener"><span class="source-icon">🇧🇷</span><span><strong>Defesa Civil Nacional</strong><small>Orientações e alertas de desastres no Brasil</small></span><b>↗</b></a>
+        <a class="source-item" href="https://portal.inmet.gov.br/" target="_blank" rel="noopener"><span class="source-icon">🌦️</span><span><strong>INMET</strong><small>Avisos meteorológicos no Brasil</small></span><b>↗</b></a>
+        <a class="source-item" href="https://www.gov.br/pt-br/servicos/solicitar-cadastro-para-recebimento-de-avisos-e-alertas-de-desastres" target="_blank" rel="noopener"><span class="source-icon">📲</span><span><strong>Receber alertas oficiais</strong><small>Canais oficiais disponíveis no Brasil</small></span><b>↗</b></a>
+        <a class="source-item" href="https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php" target="_blank" rel="noopener"><span class="source-icon">🌐</span><span><strong>USGS — terremotos</strong><small>Feed global de eventos sísmicos recentes</small></span><b>↗</b></a>
+        <a class="source-item" href="https://www.tsunami.gov/" target="_blank" rel="noopener"><span class="source-icon">🌊</span><span><strong>NOAA Tsunami Warning Centers</strong><small>Informações de tsunami para regiões monitoradas</small></span><b>↗</b></a>
+        <a class="source-item" href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener"><span class="source-icon">🌀</span><span><strong>National Hurricane Center</strong><small>Ciclones tropicais em regiões monitoradas</small></span><b>↗</b></a>
+      </div>
+      <div class="source-note"><span>!</span><p>Antes do lançamento público, precisamos verificar cobertura, atualização, permissões e funcionamento de cada integração.</p></div>
+    </section>
+
+
+    <section id="view-create" class="view hidden">
+      <div class="section-heading"><div><p class="eyebrow">COMPARTILHAMENTO RESPONSÁVEL</p><h2>Criar cartão preventivo</h2></div><span class="pill neutral">PÚBLICO</span></div>
+      <div class="admin-warning"><strong>Cartão criado por você</strong><p>Esta ferramenta não confirma que um evento vai acontecer. Não use o cartão para se passar pela Defesa Civil ou por outro órgão oficial. Confirme os fatos antes de compartilhar.</p></div>
+      <form id="publicCardForm" class="admin-form admin-panel">
+        <label for="cardEvent">Evento</label>
+        <select id="cardEvent"><option value="Chuva forte / tempestade">🌧️ Chuva forte / tempestade</option><option value="Enchente / inundação">🌊 Enchente / inundação</option><option value="Deslizamento de terra">⛰️ Deslizamento de terra</option><option value="Terremoto">🌎 Terremoto</option><option value="Tsunami">🌊 Tsunami</option><option value="Incêndio florestal">🔥 Incêndio florestal</option><option value="Tornado / ventos extremos">🌪️ Tornado / ventos extremos</option><option value="Onda de calor">☀️ Onda de calor</option><option value="Comunicado geral">ℹ️ Comunicado geral</option></select>
+        <label for="cardPeriod">Período</label>
+        <select id="cardPeriod"><option>Manhã</option><option>Tarde</option><option selected>Noite</option><option>Madrugada</option><option>Não informado</option></select>
+        <label for="cardRegion">Região (opcional)</label><input id="cardRegion" maxlength="100" placeholder="Bairro ou município">
+        <label for="cardSource">Fonte consultada (opcional)</label><input id="cardSource" maxlength="160" placeholder="Ex.: Defesa Civil municipal — link para o aviso">
+        <label for="cardExtra">Informação adicional (opcional)</label><textarea id="cardExtra" maxlength="500" rows="3" placeholder="Inclua somente informações verificadas; não invente data ou risco."></textarea>
+        <button class="primary-btn full-btn" type="submit">Gerar cartão</button>
+        <div id="publicCardPreview" class="privacy-note hidden" aria-live="polite"></div>
+        <button id="sharePublicCard" class="secondary-btn full-btn hidden" type="button">Preparar cartão no WhatsApp</button>
+      </form>
+      <div class="source-note"><span>ⓘ</span><p>Orientações são gerais e podem não servir para toda situação. Siga a Defesa Civil local e as instruções dos serviços de emergência. Em perigo imediato no Brasil: Bombeiros 193; Defesa Civil 199.</p></div>
+    </section>
+
+    <footer><div class="footer-diamond">◇</div><strong>SENTINELA</strong> <span>•</span> GLITCH LORE STUDIO'S <p>Informação clara. Preparação em família.</p><button id="creditsBtn" class="credits-link" type="button">Ver créditos</button></footer>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="introScene" class="intro-scene" aria-label="Abertura do Sentinela">
+    <div class="intro-stars" aria-hidden="true"></div>
+    <div class="intro-diamond" aria-hidden="true">◇</div>
+    <p class="intro-overline">GLITCH LORE STUDIO'S APRESENTA</p>
+    <h1 class="intro-title">SENTINELA</h1>
+    <p class="intro-subtitle">Quando o mundo muda, fique preparado.</p>
+    <div class="intro-progress"><span></span></div>
+    <button id="skipIntro" type="button">Pular abertura</button>
+  </div>
+  <div id="creditsScene" class="credits-scene hidden" aria-label="Créditos">
+    <div class="credits-card"><div class="credits-gem">◇</div><p class="eyebrow">UMA CRIAÇÃO INDEPENDENTE</p><h2>GLITCH LORE STUDIO'S</h2><p>Apresenta</p><h3>SENTINELA</h3><div class="credits-line"></div><p>Design e conceito<br><strong>Glitch Lore Studio's</strong></p><p>Dados meteorológicos<br><strong>Open-Meteo</strong></p><p>Mapa e eventos sísmicos<br><strong>OpenStreetMap • USGS</strong></p><small>Protótipo experimental • Verifique sempre as fontes oficiais.</small><button id="closeCredits" class="primary-btn" type="button">Voltar ao Sentinela</button></div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
