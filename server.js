@@ -60,6 +60,24 @@ function writeAnnouncements(items) {
 function requireAdmin(req, res, next) { if (req.session && req.session.isAdmin === true) return next(); return res.status(401).json({error:"Sessão administrativa necessária."}); }
 app.get("/api/health", (_req,res)=>res.json({ok:true, service:"Sentinela API"}));
 app.get("/api/announcements", (_req,res)=>res.json({announcements:readAnnouncements()}));
+const pushSubscriptions = new Map();
+
+app.post("/api/push/subscribe", async (req, res) => {
+  const subscription = req.body;
+
+  if (
+    !subscription ||
+    typeof subscription.endpoint !== "string" ||
+    !subscription.keys ||
+    typeof subscription.keys.p256dh !== "string" ||
+    typeof subscription.keys.auth !== "string"
+  ) {
+    return res.status(400).json({ error: "Inscrição inválida." });
+  }
+
+  pushSubscriptions.set(subscription.endpoint, subscription);
+  res.json({ ok: true });
+});
 app.post("/api/admin/login", loginLimiter, (req,res)=>{
   const supplied = req.body && req.body.password;
   if (typeof supplied !== "string" || !safeEqual(supplied, ADMIN_PASSWORD)) return res.status(401).json({error:"Senha incorreta."});
