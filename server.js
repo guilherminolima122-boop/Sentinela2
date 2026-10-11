@@ -95,7 +95,39 @@ app.post("/api/admin/login", loginLimiter, (req,res)=>{
   });
 });
 app.get("/api/admin/me", (req,res)=>res.json({authenticated:!!(req.session && req.session.isAdmin===true)}));
-app.post("/api/admin/logout", (req,res)=>{ if(!req.session) return res.json({ok:true}); req.session.destroy(()=>{res.clearCookie("sentinela.sid",{httpOnly:true,sameSite:"strict",secure:process.env.NODE_ENV==="production"});res.json({ok:true});}); });
+app.post("/api/admin/push/test", requireAdmin, async (req, res) => {
+  if (pushSubscriptions.size === 0) {
+    return res.status(400).json({
+      error: "Nenhum dispositivo inscrito neste servidor."
+    });
+  }
+
+  const payload = JSON.stringify({
+    title: "Sentinela — Teste",
+    body: "Deu certo! Seu dispositivo recebeu uma notificação de teste.",
+    url: "/"
+  });
+
+  const resultados = await Promise.allSettled(
+    [...pushSubscriptions.values()].map(subscription =>
+      webpush.sendNotification(subscription, payload)
+    )
+  );
+
+  const enviados = resultados.filter(r => r.status === "fulfilled").length;
+
+  resultados.forEach((resultado, i) => {
+    if (resultado.status === "rejected") {
+      console.error("Falha no envio push:", resultado.reason);
+    }
+  });
+
+  res.json({
+    ok: enviados > 0,
+    enviados,
+    total: resultados.length
+  });
+});app.post("/api/admin/logout", (req,res)=>{ if(!req.session) return res.json({ok:true}); req.session.destroy(()=>{res.clearCookie("sentinela.sid",{httpOnly:true,sameSite:"strict",secure:process.env.NODE_ENV==="production"});res.json({ok:true});}); });
 app.post("/api/admin/announcements", requireAdmin, (req,res)=>{
   const body = req.body || {};
   const title = typeof body.title === "string" ? body.title.trim().slice(0,100) : "";
