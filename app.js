@@ -227,3 +227,26 @@ loadWeather();
 // Atualiza a previsão periodicamente enquanto o app estiver aberto.
 setInterval(() => { if (document.visibilityState === "visible") loadWeather(); }, 10 * 60 * 1000);
 if (window.L) initMap(); else $("#mapStatus").textContent="A biblioteca do mapa não carregou. Confira a conexão com a internet.";
+async function ativarNotificacoes() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    alert("Este navegador não suporta notificações push.");
+    return;
+  }
+
+  if (!("Notification" in window)) {
+    alert("Notificações não são suportadas neste navegador.");
+    return;
+  }
+
+  const permissao = await Notification.requestPermission();
+
+  if (permissao !== "granted") {
+    alert("Você não autorizou as notificações.");
+    return;
+  }
+
+  const registro = await navigator.serviceWorker.register("/sw.js");
+  await registro.update();
+
+  alert("Permissão concedida! Ainda precisamos conectar o envio de avisos.");
+}
