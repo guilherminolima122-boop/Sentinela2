@@ -59,6 +59,13 @@ function writeAnnouncements(items) {
 }
 function requireAdmin(req, res, next) { if (req.session && req.session.isAdmin === true) return next(); return res.status(401).json({error:"Sessão administrativa necessária."}); }
 app.get("/api/health", (_req,res)=>res.json({ok:true, service:"Sentinela API"}));
+app.get("/api/push/public-key", (_req, res) => {
+  if (!process.env.VAPID_PUBLIC_KEY) {
+    return res.status(503).json({ error: "Chave pública não configurada." });
+  }
+
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+});
 app.get("/api/announcements", (_req,res)=>res.json({announcements:readAnnouncements()}));
 const pushSubscriptions = new Map();
 
