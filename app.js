@@ -228,25 +228,50 @@ loadWeather();
 setInterval(() => { if (document.visibilityState === "visible") loadWeather(); }, 10 * 60 * 1000);
 if (window.L) initMap(); else $("#mapStatus").textContent="A biblioteca do mapa não carregou. Confira a conexão com a internet.";
 async function ativarNotificacoes() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    alert("Este navegador não suporta notificações push.");
-    return;
+  try {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      alert("Este navegador não suporta notificações push.");
+      return;
+    }
+
+    const permissao = await Notification.requestPermission();
+
+    if (permissao !== "granted") {
+      alert("Você não autorizou as notificações.");
+      return;
+    }
+
+    const resposta = await fetch("/api/push/public-key");
+    if (!resposta.ok) throw new Error("Não foi possível obter a chave pública.");
+
+    const dados = await resposta.json();
+
+    function chaveEmBytes(chave) {
+      const padding = "=".repeat((4 - chave.length % 4) % 4);
+      const base64 = (chave + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const binario = atob(base64);
+      return Uint8Array.from(binario, letra => letra.charCodeAt(0));
+    }
+
+    const registro = await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.ready;
+
+    const inscricao = await registro.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: chaveEmBytes(dados.publicKey)
+    });
+
+    const envio = await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inscricao)
+    });
+
+    if (!envio.ok) throw new Error("Não foi possível registrar esta inscrição.");
+
+    alert("Inscrição registrada! Ainda precisamos testar o envio de avisos.");
+  } catch (erro) {
+    console.error(erro);
+    alert("Não foi possível ativar as notificações. Tente novamente.");
   }
-
-  if (!("Notification" in window)) {
-    alert("Notificações não são suportadas neste navegador.");
-    return;
-  }
-
-  const permissao = await Notification.requestPermission();
-
-  if (permissao !== "granted") {
-    alert("Você não autorizou as notificações.");
-    return;
-  }
-
-  const registro = await navigator.serviceWorker.register("/sw.js");
-  await registro.update();
-
-  alert("Permissão concedida! Ainda precisamos conectar o envio de avisos.");
 }
