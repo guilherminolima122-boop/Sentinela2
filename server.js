@@ -128,20 +128,102 @@ app.post("/api/admin/push/test", requireAdmin, async (req, res) => {
     total: resultados.length
   });
 });app.post("/api/admin/logout", (req,res)=>{ if(!req.session) return res.json({ok:true}); req.session.destroy(()=>{res.clearCookie("sentinela.sid",{httpOnly:true,sameSite:"strict",secure:process.env.NODE_ENV==="production"});res.json({ok:true});}); });
-app.post("/api/admin/announcements", requireAdmin, (req,res)=>{
+app.post("/api/admin/announcements", requireAdmin, async (req, res) => {
   const body = req.body || {};
-  const title = typeof body.title === "string" ? body.title.trim().slice(0,100) : "";
-  const message = typeof body.body === "string" ? body.body.trim().slice(0,2000) : "";
-  const category = typeof body.category === "string" ? body.category.slice(0,60) : "Informativo";
-  const sourceLabel = typeof body.sourceLabel === "string" ? body.sourceLabel.trim().slice(0,160) : "";
-  const sourceUrl = typeof body.sourceUrl === "string" ? body.sourceUrl.trim().slice(0,500) : "";
-  if (!title || !message) return res.status(400).json({error:"Preencha título e mensagem."});
-  if (sourceUrl) { try { const url = new URL(sourceUrl); if(!["https:","http:"].includes(url.protocol)) throw new Error(); } catch { return res.status(400).json({error:"O link da fonte precisa ser uma URL HTTP ou HTTPS válida."}); } }
+
+  const title = typeof body.title === "string"
+    ? body.title.trim().slice(0, 100) : "";
+
+  const message = typeof body.body === "string"
+    ? body.body.trim().slice(0, 2000) : "";
+
+  const category = typeof body.category === "string"
+    ? body.category.slice(0, 60) : "Informativo";
+
+  const sourceLabel = typeof body.sourceLabel === "string"
+    ? body.sourceLabel.trim().slice(0, 160) : "";
+
+  const sourceUrl = typeof body.sourceUrl === "string"
+    ? body.sourceUrl.trim().slice(0, 500) : "";
+
+  if (!title || !message) {
+    return res.status(400).json({
+      error: "Preencha título e mensagem."
+    });
+  }
+
+  if (sourceUrl) {
+    try {
+      const url = new URL(sourceUrl);
+      if (!["https:", "http:"].includes(url.protocol)) {
+        throw new Error();
+      }
+    } catch {
+      return res.status(400).json({
+        error: "O link da fonte precisa ser uma URL HTTP ou HTTPS válida."
+      });
+    }
+  }
+
   const items = readAnnouncements();
-  const item = {id:crypto.randomUUID(), title, body:message, category, sourceLabel:sourceLabel || "Não informada", sourceUrl, publishedAt:new Date().toLocaleString("pt-BR"), status:"admin-communication-not-official"};
-  items.push(item);
-  try { writeAnnouncements(items.slice(-100)); return res.status(201).json({ok:true, announcement:item}); }
-  catch { return res.status(500).json({error:"Não foi possível salvar. Confira se o servidor permite gravar na pasta data."}); }
+
+  const item = {
+    id: crypto.randomUUID(),
+    title,
+    body: message,
+    category,
+    sourceLabel: sourceLabel || "Não informada",
+    sourceUrl,
+    publishedAt: new Date().toLocaleString("pt-BR"),
+    status: "admin-communication-not-official"
+  };
+
+  try {
+    writeAnnouncements(items.concat(item).slice(-100));
+  } catch {
+    return res.status(500).json({
+      error: "Não foi possível salvar o comunicado."
+    });
+  }
+
+  const payload = JSON.stringify({
+    title: "Sentinela: " + title,
+    body: message,
+    url: "/"
+  });
+
+  let enviados = 0;
+  let falhas = 0;
+
+  const inscricoes = [...pushSubscriptions.entries()];
+
+  const resultados = await Promise.allSettled(
+    inscricoes.map(async ([endpoint, subscription]) => {
+      try {
+        await webpush.sendNotification(subscription, payload);
+        enviados++;
+      } catch (erro) {
+        falhas++;
+
+        if (erro.statusCode === 404 || erro.statusCode === 410) {
+          pushSubscriptions.delete(endpoint);
+        }
+
+        console.error("Falha no envio de notificação:", erro.statusCode || erro.message);
+      }
+    })
+  );
+
+  return res.status(201).json({
+    ok: true,
+    announcement: item,
+    notificacoes: {
+      dispositivosInscritos: inscricoes.length,
+      enviosAceitos: enviados,
+      falhas
+    }
+  });
 });
+
 app.use(express.static(__dirname, {index:"index.html", dotfiles:"deny"}));
 app.listen(PORT, ()=>console.log(`Sentinela iniciado na porta ${PORT}.`));
