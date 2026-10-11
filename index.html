@@ -115,8 +115,17 @@
   <div id="creditsScene" class="credits-scene hidden" aria-label="Créditos">
     <div class="credits-card"><div class="credits-gem">◇</div><p class="eyebrow">UMA CRIAÇÃO INDEPENDENTE</p><h2>GLITCH LORE STUDIO'S</h2><p>Apresenta</p><h3>SENTINELA</h3><div class="credits-line"></div><p>Design e conceito<br><strong>Glitch Lore Studio's</strong></p><p>Dados meteorológicos<br><strong>Open-Meteo</strong></p><p>Mapa e eventos sísmicos<br><strong>OpenStreetMap • USGS</strong></p><small>Protótipo experimental • Verifique sempre as fontes oficiais.</small><button id="closeCredits" class="primary-btn" type="button">Voltar ao Sentinela</button></div>
   </div>
-  <button type="button" onclick="ativarNotificacoes()">
-  🔔 Ativar notificações
+  <button
+  type="button"
+  class="notification-fab"
+  onclick="ativarNotificacoes()"
+>
+  <span class="notification-icon">♢</span>
+  <span>
+    <strong>Ativar notificações</strong>
+    <small>Receba novos avisos</small>
+  </span>
+  <span class="notification-arrow">›</span>
   </button>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
