@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sentinela-servidor.onrender.com/sitemap.xml
